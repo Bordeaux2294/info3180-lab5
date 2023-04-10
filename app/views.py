@@ -4,10 +4,14 @@ Jinja2 Documentation:    https://jinja.palletsprojects.com/
 Werkzeug Documentation:  https://werkzeug.palletsprojects.com/
 This file creates your application.
 """
-
+from . import db
 from app import app
-from flask import render_template, request, jsonify, send_file
+from flask import render_template, request, jsonify, send_file, make_response
+from app.models import Movies
+from app.forms import MovieForm
 import os
+from flask_wtf.csrf import generate_csrf
+from werkzeug.utils import secure_filename
 
 
 ###
@@ -18,7 +22,31 @@ import os
 def index():
     return jsonify(message="This is the beginning of our API")
 
-
+@app.route('/api/v1/movies', methods=['POST'])
+def movies():
+    form =MovieForm()
+    if form.validate_on_submit():
+        title = form.title.data
+        desc = form.description.data
+        poster = form.poster.data
+        pname = secure_filename(poster.filename)
+        response=' '
+        response = jsonify({"message": "Movie Successfully added", 
+                    "title": title,
+                    "poster": pname, 
+                    "desc": desc})
+            
+        new_movie = Movies(title, desc, pname)
+        poster.save(os.path.join(app.config['UPLOAD_FOLDER'], pname))
+    
+        # adding to database
+        db.session.add(new_movie)
+        db.session.commit()
+        
+        return response
+        
+    else:
+        return make_response({'errors': form_errors(form)},400)
 ###
 # The functions below should be applicable to all Flask apps.
 ###

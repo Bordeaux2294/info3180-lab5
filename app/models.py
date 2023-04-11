@@ -10,10 +10,11 @@ class Movies(db.Model):
     title = db.Column(db.String(80))
     description = db.Column(db.Text)
     poster = db.Column(db.String(80))
-    created_at = db.Column(db.DateTime, default=datetime.now(pytz.timezone('US/Eastern')))
+    created_at = db.Column(db.DateTime)
 
-    def __init__(self, title, description, poster, created_at):
+    def __init__(self, title, description, poster):
         self.title = title
         self.description = description
         self.poster = poster
-        self.created_at = created_at
+        time = datetime.now(pytz.timezone('US/Eastern'))
+        self.created_at = time
